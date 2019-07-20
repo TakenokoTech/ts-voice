@@ -12,7 +12,7 @@ export default class Waveform {
         this.update = this.update.bind(this);
     }
 
-    update(data) {
+    update(data: number[]) {
         const context = this.canvasContext;
         const width = this.canvas.width;
         const height = this.canvas.height;

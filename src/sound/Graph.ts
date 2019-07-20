@@ -10,7 +10,6 @@ export default class Graph {
         this.canvas.setAttribute("height", `${this.leftBox.clientHeight}`);
         this.canvasContext = this.canvas.getContext("2d") as CanvasRenderingContext2D;
         this.update = this.update.bind(this);
-        this.ff = this.ff.bind(this);
     }
 
     update(frequencyData: Uint8Array, timeDomainData: Uint8Array, frequencyFloatData: Float32Array, timeDomainFloatData: Float32Array) {
@@ -95,10 +94,5 @@ export default class Graph {
             else context.lineTo(x, y);
         }
         context.stroke();
-    }
-
-    ff(soundFF = null) {
-        console.log(soundFF);
-        if (soundFF) this.soundFF = soundFF;
     }
 }

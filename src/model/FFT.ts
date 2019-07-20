@@ -41,7 +41,7 @@ class FFT {
     }
 
     toNumbar(n: math.Complex[]): number[] {
-        return n.map(v => Math.round(v.re*1000)/1000);
+        return n.map(v => Math.round(v.re * 1000) / 1000);
     }
 
     private revBit(k: number, n: number) {

@@ -3,6 +3,7 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 const entry = {
     app: "./src/app",
+    effectWorker: "./src/EffectWorker",
 }
 
 const babelRule = {

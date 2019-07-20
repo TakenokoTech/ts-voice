@@ -1,6 +1,8 @@
 import "babel-polyfill";
 import { Repository } from "../app";
 import SoundApi from "../model/SoundApi";
+import FFT from "../model/FFT";
+import SoundWoker from "./SoundWorker";
 
 export default class AutoEffect {
     private video = document.getElementById("myVideo");
@@ -9,6 +11,10 @@ export default class AutoEffect {
     private button = document.getElementById("recBtn") as HTMLButtonElement;
     private data: { recordingData: number[]; playingData: number[] } = { recordingData: [], playingData: [] };
     private context: AudioContext | null = null;
+
+    private soundWoker: SoundWoker = new SoundWoker((message: MessageEvent) => {
+        this.data.playingData = this.data.playingData.concat(message.data);
+    });
 
     constructor(private repository: Repository) {
         this.start = this.start.bind(this);
@@ -23,8 +29,6 @@ export default class AutoEffect {
     }
 
     async start() {
-        // let recordingData: number[] = [];
-        // let playingData: number[] = [];
         const data = this.data;
         const context = (this.context = new AudioContext()) as AudioContext;
         const analyserNode = (this.repository.model.analyserNode = context.createAnalyser());
@@ -36,7 +40,7 @@ export default class AutoEffect {
         // node
         const recordingProcessorNode = context.createScriptProcessor(1024, 1, 1);
         recordingProcessorNode.onaudioprocess = e => {
-            // console.log("onaudioprocess", data.recordingData.length);
+            console.log("onaudioprocess", data.recordingData.length);
             this.repository.model.recordingTime += e.inputBuffer.length;
             const d = Array.prototype.slice.call(e.inputBuffer.getChannelData(0));
             if (d[0] != 0 && d[1] != 0) {
@@ -51,40 +55,36 @@ export default class AutoEffect {
         // play
         this.repository.model.analyserPlayNode = context.createAnalyser();
         this.play();
+        this.effect();
     }
 
     private play() {
         const startTime = performance.now();
-        const context = this.context as AudioContext;
         const data = this.data;
-        data.playingData = data.playingData.concat(data.recordingData);
-        data.recordingData = [];
-        if (data.playingData.length >= 1024 * 8) {
-            this.createAudioBuffer(context, data.playingData);
+        if (data.playingData.length >= 1024 * 16) {
+            this.createAudioBuffer(data.playingData);
             data.playingData = [];
         }
         setTimeout(this.play, 0);
         const endTime = performance.now();
-        console.log(`play: ${endTime - startTime}`);
+        // console.log(`  play: ${endTime - startTime}`);
     }
 
     private effect() {
-        const request = recordingData;
-        if (request.length < 3000) {
-            setTimeout(this.effect, 10);
-            return;
-        }
-        recordingData = [];
         const startTime = performance.now();
-        SoundApi.callapi(request).then(response => {
-            playingData = playingData.concat(response);
-            const endTime = performance.now();
-            console.log(`effect: ${endTime - startTime} ${request.length}`);
-            this.effect();
-        });
+        const data = this.data;
+        if (data.recordingData.length > 0) {
+            const temp = data.recordingData;
+            data.recordingData = [];
+            this.soundWoker.post(temp);
+        }
+        setTimeout(this.effect, 0);
+        const endTime = performance.now();
+        // console.log(`effect: ${endTime - startTime}`);
     }
 
-    private createAudioBuffer(context: AudioContext, input: number[] | Float32Array, onended: () => void = () => {}) {
+    private createAudioBuffer(input: number[] | Float32Array, onended: () => void = () => {}) {
+        const context = this.context as AudioContext;
         const audioBuffer = context.createBuffer(1, input.length, 44100);
         const audioBufferSourceNode = context.createBufferSource();
         audioBuffer.getChannelData(0).set(input);

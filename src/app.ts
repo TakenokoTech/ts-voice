@@ -15,30 +15,35 @@ const waveform = new Waveform(context);
 
 const id = setInterval(() => {
     if (!context.model.analyserNode || !context.model.analyserPlayNode) {
-        graph.update([], [], [], []);
-        waveform.update([]);
+        graph.clear().update([], [], [], []);
+        waveform.clear().update([]);
         return;
     }
     context.model.analyserNode.minDecibels = -150;
     context.model.analyserNode.maxDecibels = -30;
-    // const frequencyData = new Uint8Array(context.model.analyserNode.frequencyBinCount);
-    // const timeDomainData = new Uint8Array(context.model.analyserNode.frequencyBinCount);
-    // const frequencyFloatData = new Float32Array(context.model.analyserNode.frequencyBinCount);
-    // const timeDomainFloatData = new Float32Array(context.model.analyserNode.frequencyBinCount);
-    // context.model.analyserNode.getByteFrequencyData(frequencyData);
-    // context.model.analyserNode.getByteTimeDomainData(timeDomainData);
-    // context.model.analyserNode.getFloatFrequencyData(frequencyFloatData);
-    // context.model.analyserNode.getFloatTimeDomainData(timeDomainFloatData);
-    const frequencyData = new Uint8Array(context.model.analyserPlayNode.frequencyBinCount);
-    const timeDomainData = new Uint8Array(context.model.analyserPlayNode.frequencyBinCount);
-    const frequencyFloatData = new Float32Array(context.model.analyserPlayNode.frequencyBinCount);
-    const timeDomainFloatData = new Float32Array(context.model.analyserPlayNode.frequencyBinCount);
-    context.model.analyserPlayNode.getByteFrequencyData(frequencyData);
-    context.model.analyserPlayNode.getByteTimeDomainData(timeDomainData);
-    context.model.analyserPlayNode.getFloatFrequencyData(frequencyFloatData);
-    context.model.analyserPlayNode.getFloatTimeDomainData(timeDomainFloatData);
-    if (frequencyFloatData[0] > -120) {
-        graph.update(frequencyData, timeDomainData, frequencyFloatData, timeDomainFloatData);
+    const recordFrequencyData = new Uint8Array(context.model.analyserNode.frequencyBinCount);
+    const recordTimeDomainData = new Uint8Array(context.model.analyserNode.frequencyBinCount);
+    const recordFrequencyFloatData = new Float32Array(context.model.analyserNode.frequencyBinCount);
+    const recordTimeDomainFloatData = new Float32Array(context.model.analyserNode.frequencyBinCount);
+    context.model.analyserNode.getByteFrequencyData(recordFrequencyData);
+    context.model.analyserNode.getByteTimeDomainData(recordTimeDomainData);
+    context.model.analyserNode.getFloatFrequencyData(recordFrequencyFloatData);
+    context.model.analyserNode.getFloatTimeDomainData(recordTimeDomainFloatData);
+    const playFrequencyData = new Uint8Array(context.model.analyserPlayNode.frequencyBinCount);
+    const playTimeDomainData = new Uint8Array(context.model.analyserPlayNode.frequencyBinCount);
+    const playFrequencyFloatData = new Float32Array(context.model.analyserPlayNode.frequencyBinCount);
+    const playTimeDomainFloatData = new Float32Array(context.model.analyserPlayNode.frequencyBinCount);
+    context.model.analyserPlayNode.getByteFrequencyData(playFrequencyData);
+    context.model.analyserPlayNode.getByteTimeDomainData(playTimeDomainData);
+    context.model.analyserPlayNode.getFloatFrequencyData(playFrequencyFloatData);
+    context.model.analyserPlayNode.getFloatTimeDomainData(playTimeDomainFloatData);
+    if (playFrequencyFloatData[0] > -120) {
+        graph
+            .clear()
+            .update(recordFrequencyData, recordTimeDomainData, recordFrequencyFloatData, recordTimeDomainFloatData, 0)
+            .update(playFrequencyData, playTimeDomainData, playFrequencyFloatData, playTimeDomainFloatData, 1);
     }
-    if (context.model.rawdata) waveform.update(context.model.rawdata);
+    if (context.model.rawdata) {
+        waveform.clear().update(context.model.rawdata);
+    }
 }, 10);

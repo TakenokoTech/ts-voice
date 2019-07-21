@@ -12,15 +12,16 @@ self.addEventListener("message", message => {
         const hz = changeHz(effectFft);
         const ifft = FFT.ifft(hz);
         const num = FFT.toNumbar(ifft);
-        data = data.concat(num);
+        data = data.concat(num.map(v => (Math.abs(v) > 0.01 ? v : 0)));
     }
     self.postMessage(data, message.data.from);
 });
 
 function cut(comp: math.Complex[]) {
     comp.forEach((v, i) => {
-        if (i > 64) comp[i] = Mathjs.complex(-100.0, 0.0);
+        //if (i > 64) comp[i] = Mathjs.complex(-100.0, 0.0);
     });
+    // comp = shiftpitch(comp, 2);
     return comp;
 }
 
@@ -38,6 +39,19 @@ function changeHz(comp: math.Complex[]): math.Complex[] {
     const temp: math.Complex[] = comp.map(() => Mathjs.complex(0, 0));
     for (const index in comp) {
         temp[index] = Mathjs.pow(10.0, Mathjs.divide(comp[index], 20) as Mathjs.Complex) as Mathjs.Complex;
+    }
+    return temp;
+}
+
+// Shiftpitch :
+function shiftpitch(comp: math.Complex[], limit: number): math.Complex[] {
+    const temp: math.Complex[] = comp.map(v => v);
+    const d: number = 2.0 ** (1.0 / 12.0);
+    for (const index in comp) {
+        const target: number = +index / d ** limit;
+        if (target < temp.length) {
+            temp[index] = comp[Math.floor(target)];
+        }
     }
     return temp;
 }

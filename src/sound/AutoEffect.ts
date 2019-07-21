@@ -41,7 +41,7 @@ export default class AutoEffect {
         // node
         const recordingProcessorNode = context.createScriptProcessor(1024, 1, 1);
         recordingProcessorNode.onaudioprocess = e => {
-            console.log("onaudioprocess", data.recordingData.length);
+            // console.log("onaudioprocess", data.recordingData.length);
             this.repository.model.recordingTime += e.inputBuffer.length;
             const d = Array.prototype.slice.call(e.inputBuffer.getChannelData(0));
             if (d[0] != 0 && d[1] != 0) {

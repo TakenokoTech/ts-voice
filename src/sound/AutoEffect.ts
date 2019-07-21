@@ -20,6 +20,7 @@ export default class AutoEffect {
         this.start = this.start.bind(this);
         this.effect = this.effect.bind(this);
         this.play = this.play.bind(this);
+        this.createAudioBuffer = this.createAudioBuffer.bind(this);
         repository.model.recordingTime = 0;
         this.button.disabled = false;
         this.button.addEventListener("click", () => {
@@ -85,6 +86,7 @@ export default class AutoEffect {
 
     private createAudioBuffer(input: number[] | Float32Array, onended: () => void = () => {}) {
         const context = this.context as AudioContext;
+        const analyserPlayNode = (this.repository.model.analyserPlayNode = context.createAnalyser());
         const audioBuffer = context.createBuffer(1, input.length, 44100);
         const audioBufferSourceNode = context.createBufferSource();
         audioBuffer.getChannelData(0).set(input);
@@ -92,6 +94,7 @@ export default class AutoEffect {
         audioBufferSourceNode.loopStart = 0;
         audioBufferSourceNode.playbackRate.value = 1.0;
         audioBufferSourceNode.connect(context.destination);
+        audioBufferSourceNode.connect(analyserPlayNode);
         audioBufferSourceNode.onended = onended;
         audioBufferSourceNode.buffer = audioBuffer;
         audioBufferSourceNode.loopEnd = audioBuffer.duration;

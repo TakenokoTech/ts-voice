@@ -13,6 +13,7 @@ export default class Graph {
     }
 
     update(frequencyData: Uint8Array, timeDomainData: Uint8Array, frequencyFloatData: Float32Array, timeDomainFloatData: Float32Array) {
+        // console.log("Graph.update");
         const context = this.canvasContext;
         const width = this.canvas.width;
         const height = this.canvas.height;

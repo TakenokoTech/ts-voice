@@ -1,18 +1,28 @@
 import * as Mathjs from "mathjs";
 import FFT from "./model/FFT";
+import Filter from "./model/Filter";
 
 self.addEventListener("message", message => {
     let data: number[] = [];
     const temp = message.data;
     for (let i = 0; i < temp.length; i += 1024) {
-        const comp = FFT.toComplex(temp.slice(i, 1024 + i));
+        const input = temp.slice(i, 1024 + i);
+        const comp = FFT.toComplex(input);
         const fft = FFT.fft(comp);
         const db = changeDb(fft);
         const effectFft = cut(db);
         const hz = changeHz(effectFft);
         const ifft = FFT.ifft(hz);
         const num = FFT.toNumbar(ifft);
-        data = data.concat(num.map(v => (Math.abs(v) > 0.01 ? v : 0)));
+        const output = new Filter(num)
+            .bandpass(880)
+            // .bandstop(880)
+            // .lowshelf(440)
+            // .highshelf(2756)
+            // .lowpass(1378)
+            // .highpass(1320)
+            .output();
+        data = data.concat(output.map(v => (Math.abs(v) > 0.01 ? v : v)));
     }
     self.postMessage(data, message.data.from);
 });

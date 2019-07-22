@@ -37,7 +37,7 @@ const id = setInterval(() => {
     context.model.analyserPlayNode.getByteTimeDomainData(playTimeDomainData);
     context.model.analyserPlayNode.getFloatFrequencyData(playFrequencyFloatData);
     context.model.analyserPlayNode.getFloatTimeDomainData(playTimeDomainFloatData);
-    if (playFrequencyFloatData[0] > -120) {
+    if (recordFrequencyFloatData[0] > -120 || playFrequencyFloatData[0] > -120) {
         graph
             .clear()
             .update(recordFrequencyData, recordTimeDomainData, recordFrequencyFloatData, recordTimeDomainFloatData, 0)

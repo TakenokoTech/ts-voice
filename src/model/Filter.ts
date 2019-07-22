@@ -71,7 +71,7 @@ export default class Filter {
         return this;
     }
 
-    lowshelf(freq = 440, gain = 10, samplerate = 44100, q = this.q) {
+    lowshelf(freq = 440, gain = 10, samplerate = 44100, q = this.q): Filter {
         const omega = (2.0 * Math.PI * freq) / samplerate;
         const A = Math.pow(10.0, gain / 40.0);
         const beta = Math.sqrt(A) / q;
@@ -85,7 +85,7 @@ export default class Filter {
         return this;
     }
 
-    highshelf(freq = 440, gain = 10, samplerate = 44100, q = this.q) {
+    highshelf(freq = 440, gain = 10, samplerate = 44100, q = this.q): Filter {
         const omega = (2.0 * Math.PI * freq) / samplerate;
         const A = Math.pow(10.0, gain / 40.0);
         const beta = Math.sqrt(A) / q;
@@ -99,7 +99,7 @@ export default class Filter {
         return this;
     }
 
-    peaking(freq = 440, gain = 10, bw = 1, samplerate = 44100, q = this.q) {
+    peaking(freq = 440, gain = 10, bw = 1, samplerate = 44100, q = this.q): Filter {
         const omega = (2.0 * Math.PI * freq) / samplerate;
         const alpha = Math.sin(omega) * Math.sinh(((Math.log(2.0) / 2.0) * bw * omega) / Math.sin(omega));
         const A = Math.pow(10.0, gain / 40.0);
@@ -115,5 +115,12 @@ export default class Filter {
 
     output(): number[] {
         return this.input;
+    }
+
+    switch(func: Filter, enable: boolean): Filter {
+        if (enable) {
+            return func;
+        }
+        return this;
     }
 }

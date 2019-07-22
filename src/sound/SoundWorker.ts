@@ -6,6 +6,6 @@ export default class SoundWorker {
     }
 
     async post(message: any) {
-        this.effectWorker.postMessage(message);
+        this.effectWorker.postMessage(message /*, ["bandpass"]]*/);
     }
 }

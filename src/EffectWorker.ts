@@ -5,6 +5,7 @@ import Filter from "./model/Filter";
 self.addEventListener("message", message => {
     let data: number[] = [];
     const temp = message.data;
+    const filterList: String[] = []; // message.data;
     for (let i = 0; i < temp.length; i += 1024) {
         const input = temp.slice(i, 1024 + i);
         const comp = FFT.toComplex(input);
@@ -14,14 +15,25 @@ self.addEventListener("message", message => {
         const hz = changeHz(effectFft);
         const ifft = FFT.ifft(hz);
         const num = FFT.toNumbar(ifft);
-        const output = new Filter(num)
-            .bandpass(880)
-            // .bandstop(880)
-            // .lowshelf(440)
-            // .highshelf(2756)
-            // .lowpass(1378)
-            // .highpass(1320)
-            .output();
+
+        let filter = new Filter(num);
+        filterList.forEach(v => {
+            switch (v) {
+                case "bandpass":
+                    filter = filter.bandpass(880);
+                case "bandstop":
+                    filter = filter.bandstop(880);
+                case "lowshelf":
+                    filter = filter.lowshelf(440);
+                case "highshelf":
+                    filter = filter.highshelf(2756);
+                case "lowpass":
+                    filter = filter.lowpass(1378);
+                case "highpass":
+                    filter = filter.highpass(1320);
+            }
+        });
+        const output = filter.output();
         data = data.concat(output.map(v => (Math.abs(v) > 0.01 ? v : v)));
     }
     self.postMessage(data, message.data.from);

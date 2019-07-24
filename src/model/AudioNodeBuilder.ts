@@ -49,7 +49,7 @@ export default class AudioNodeBuilder {
 
     async gainNode(): Promise<AudioNode> {
         const gainNode = this.context.createGain();
-        gainNode.gain.value = 0.05;
+        gainNode.gain.value = 0.1;
         return Promise.resolve(gainNode);
     }
 }

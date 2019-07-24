@@ -5,7 +5,7 @@ export default class SoundWorker {
         this.effectWorker.addEventListener("message", listen);
     }
 
-    async post(message: any) {
-        this.effectWorker.postMessage(message /*, ["bandpass"]]*/);
+    async post(sound: any, effect: MapList) {
+        this.effectWorker.postMessage({ sound: sound, effect: effect });
     }
 }

@@ -1,5 +1,5 @@
 class SoundApi {
-    async callapi(sound: number[] = []): Promise<number[]> {
+    async callapi(sound: number[] = []): Promise<number[] | null> {
         try {
             const high = +$("#highpass").val();
             const low = +$("#lowpass").val();
@@ -18,7 +18,7 @@ class SoundApi {
             return json.result;
         } catch (e) {
             console.error(e);
-            return "";
+            return null;
         }
     }
 }

@@ -4,32 +4,32 @@ import Filter from "./model/Filter";
 
 self.addEventListener("message", message => {
     let data: number[] = [];
-    const temp = message.data;
-    const filterList: String[] = []; // message.data;
+    const temp = message.data.sound;
+    const filterList: MapList = message.data.effect;
     for (let i = 0; i < temp.length; i += 1024) {
         const input = temp.slice(i, 1024 + i);
         const comp = FFT.toComplex(input);
         const fft = FFT.fft(comp);
         const db = changeDb(fft);
-        const effectFft = cut(db);
+        const effectFft = effect(db, filterList);
         const hz = changeHz(effectFft);
         const ifft = FFT.ifft(hz);
         const num = FFT.toNumbar(ifft);
 
         let filter = new Filter(num);
         filterList.forEach(v => {
-            switch (v) {
-                case "bandpass":
+            switch (false) {
+                case !v["bandpass"]:
                     filter = filter.bandpass(880);
-                case "bandstop":
+                case !v["bandstop"]:
                     filter = filter.bandstop(880);
-                case "lowshelf":
+                case !v["lowshelf"]:
                     filter = filter.lowshelf(440);
-                case "highshelf":
+                case !v["highshelf"]:
                     filter = filter.highshelf(2756);
-                case "lowpass":
+                case !v["lowpass"]:
                     filter = filter.lowpass(1378);
-                case "highpass":
+                case !v["highpass"]:
                     filter = filter.highpass(1320);
             }
         });
@@ -39,11 +39,13 @@ self.addEventListener("message", message => {
     self.postMessage(data, message.data.from);
 });
 
-function cut(comp: math.Complex[]) {
+function effect(comp: math.Complex[], filterList: { [key: string]: number }[]) {
     comp.forEach((v, i) => {
         //if (i > 64) comp[i] = Mathjs.complex(-100.0, 0.0);
     });
-    // comp = shiftpitch(comp, 2);
+    filterList.forEach(v => {
+        if (!isNone(v["pitchshift"])) comp = shiftpitch(comp, v["pitchshift"]);
+    });
     return comp;
 }
 
@@ -65,7 +67,7 @@ function changeHz(comp: math.Complex[]): math.Complex[] {
     return temp;
 }
 
-// Shiftpitch :
+// Shiftpitch : ピッチシフト
 function shiftpitch(comp: math.Complex[], limit: number): math.Complex[] {
     const temp: math.Complex[] = comp.map(v => v);
     const d: number = 2.0 ** (1.0 / 12.0);
@@ -76,4 +78,8 @@ function shiftpitch(comp: math.Complex[], limit: number): math.Complex[] {
         }
     }
     return temp;
+}
+
+function isNone(value: any) {
+    return value == (null || undefined);
 }

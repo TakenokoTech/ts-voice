@@ -10,11 +10,13 @@ const videoDom = document.getElementById("myVideo");
 const debugDom = document.getElementById("debugText");
 const rTimeDom = document.getElementById("recTime");
 const buttonDom = document.getElementById("recBtn") as HTMLButtonElement;
+const pitchShiftDom = document.getElementById("shift") as HTMLInputElement;
 const context: AudioContext = new AudioContext();
 const audioNodeBuilder: AudioNodeBuilder = new AudioNodeBuilder(context);
 
 export default class AutoEffect {
     private data: { recordingData: number[]; playingData: number[] } = { recordingData: [], playingData: [] };
+    private effectList: MapList = [];
     private soundWoker: SoundWoker = new SoundWoker((message: MessageEvent) => {
         this.data.playingData = this.data.playingData.concat(message.data);
     });
@@ -23,10 +25,12 @@ export default class AutoEffect {
         this.start = this.start.bind(this);
         this.effect = this.effect.bind(this);
         this.play = this.play.bind(this);
+        this.onChangeState = this.onChangeState.bind(this);
         this.repository.model.analyserPlayNode = context.createAnalyser();
         this.repository.model.analyserNode = context.createAnalyser();
         repository.model.recordingTime = 0;
         buttonDom.disabled = false;
+        this.onChangeState();
         buttonDom.addEventListener("click", () => {
             buttonDom.disabled = true;
             this.start();
@@ -74,13 +78,21 @@ export default class AutoEffect {
         setTimeout(this.play, 0);
     }
 
+    private onChangeState() {
+        console.log(this.effectList);
+        pitchShiftDom.onchange = () => {
+            this.effectList = [{ pitchshift: +pitchShiftDom.value }];
+        };
+    }
+
     private effect() {
         countTime("effect", () => {
             const data = this.data;
             if (data.recordingData.length > 0) {
                 const temp = data.recordingData;
+                const effect: MapList = this.effectList;
                 data.recordingData = [];
-                this.soundWoker.post(temp);
+                this.soundWoker.post(temp, effect);
             }
         });
         setTimeout(this.effect, 0);

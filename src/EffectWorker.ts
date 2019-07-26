@@ -1,9 +1,9 @@
-import * as Mathjs from "mathjs";
-import FFT from "./model/FFT";
-import Filter from "./model/Filter";
+import * as Mathjs from 'mathjs';
+import FFT from './model/FFT';
+import Filter from './model/Filter';
 
-self.addEventListener("message", message => {
-    let data: number[] = [];
+self.addEventListener('message', message => {
+    let response: EffectWorkerMessage = { data: [], timestamp: message.data.timestamp };
     const temp = message.data.sound;
     const filterList: MapList = message.data.effect;
     for (let i = 0; i < temp.length; i += 1024) {
@@ -19,24 +19,24 @@ self.addEventListener("message", message => {
         let filter = new Filter(num);
         filterList.forEach(v => {
             switch (false) {
-                case !v["bandpass"]:
-                    filter = filter.bandpass(880);
-                case !v["bandstop"]:
-                    filter = filter.bandstop(880);
-                case !v["lowshelf"]:
-                    filter = filter.lowshelf(440);
-                case !v["highshelf"]:
-                    filter = filter.highshelf(2756);
-                case !v["lowpass"]:
-                    filter = filter.lowpass(1378);
-                case !v["highpass"]:
-                    filter = filter.highpass(1320);
+                case !v['bandpass']:
+                    filter = filter.bandpass(v['bandpass']);
+                case !v['bandstop']:
+                    filter = filter.bandstop(v['bandstop']);
+                case !v['lowshelf']:
+                    filter = filter.lowshelf(v['lowshelf']);
+                case !v['highshelf']:
+                    filter = filter.highshelf(v['highshelf']);
+                case !v['lowpass']:
+                    filter = filter.lowpass(v['lowpass']);
+                case !v['highpass']:
+                    filter = filter.highpass(v['highpass']);
             }
         });
         const output = filter.output();
-        data = data.concat(output.map(v => (Math.abs(v) > 0.01 ? v : v)));
+        response.data = response.data.concat(output.map(v => (Math.abs(v) > 0.01 ? v : v)));
     }
-    self.postMessage(data, message.data.from);
+    self.postMessage(response, message.data.from);
 });
 
 function effect(comp: math.Complex[], filterList: { [key: string]: number }[]) {
@@ -44,7 +44,7 @@ function effect(comp: math.Complex[], filterList: { [key: string]: number }[]) {
         //if (i > 64) comp[i] = Mathjs.complex(-100.0, 0.0);
     });
     filterList.forEach(v => {
-        if (!isNone(v["pitchshift"])) comp = shiftpitch(comp, v["pitchshift"]);
+        if (!isNone(v['pitchshift'])) comp = shiftpitch(comp, v['pitchshift']);
     });
     return comp;
 }

@@ -2,64 +2,70 @@ import 'web-animations-js';
 import 'hammerjs';
 import * as Muuri from 'muuri';
 import './Grid.css';
+import BaseComponent from './BaseComponent';
 
-const highpassDom = document.getElementById('highpass') as HTMLInputElement;
-const lowpassDom = document.getElementById('lowpass') as HTMLInputElement;
-const pitchShiftDom = document.getElementById('shift') as HTMLInputElement;
-
-const _gridMap = {
-    lowpass: { enabled: false, value: () => Math.pow(2, +lowpassDom.value) },
-    highshelf: { enabled: false, value: () => Math.pow(2, +highpassDom.value) },
-    pitchshift: { enabled: false, value: () => +pitchShiftDom.value },
-};
-
-class Grid {
+class Grid extends BaseComponent {
     grid: any | null;
-    gridDom = document.getElementsByClassName('grid')[0];
     gridMap: {
         [key: string]: { enabled: boolean; value: () => number };
-    } = _gridMap;
+    } = {
+        lowpass: { enabled: false, value: () => Math.pow(2, +this.iElement['lowpass'].value) },
+        highpass: { enabled: false, value: () => Math.pow(2, +this.iElement['highpass'].value) },
+        bandpass: { enabled: false, value: () => Math.pow(2, +this.iElement['bandpass'].value) },
+        bandstop: { enabled: false, value: () => Math.pow(2, +this.iElement['bandstop'].value) },
+        lowshelf: { enabled: false, value: () => Math.pow(2, +this.iElement['lowshelf'].value) },
+        highshelf: { enabled: false, value: () => Math.pow(2, +this.iElement['highshelf'].value) },
+        pitchshift: { enabled: false, value: () => +this.iElement['pitchshift'].value },
+    };
     filterList: MapList = [];
 
-    constructor() {
-        this.onChangeState = this.onChangeState.bind(this);
-        const gridMap = this.gridMap;
-        const createItem = (name: string): HTMLDivElement => {
-            const itemDom = document.createElement('div');
-            itemDom.className = 'item';
-            const content = document.createElement('div');
-            content.className = 'item-content';
-            itemDom.appendChild(content);
-            const custom = document.createElement('div');
-            custom.className = 'custom-content disabled';
-            custom.innerHTML = name;
-            custom.onclick = () => {
-                gridMap[name].enabled = !gridMap[name].enabled;
-                custom.className = gridMap[name].enabled
-                    ? 'custom-content'
-                    : 'custom-content disabled';
-                this.onChangeState();
-            };
-            content.appendChild(custom);
-            content.innerHTML;
-            return itemDom;
-        };
-        Object.keys(gridMap).forEach(name => {
-            this.gridDom.appendChild(createItem(name));
-        });
-        this.grid = new Muuri('.grid', {
-            dragEnabled: true,
-        });
+    private makeCustom = (name: string, onclick: () => void) => {
+        const nameSpan = this.makeDiv('', '', `${name}`);
+        nameSpan.onclick = onclick;
+        const custom = this.makeDiv('', 'custom-content');
+        custom.innerHTML = `<input id="${name}" type="number" class="form-control" value="0"/>`;
+        custom.insertBefore(nameSpan, custom.firstChild);
+        return custom;
+    };
 
-        //
-        pitchShiftDom.onchange = this.onChangeState;
+    constructor() {
+        super();
+        this.muuri = this.muuri.bind(this);
+        this.onChangeState = this.onChangeState.bind(this);
+        this.muuri();
+    }
+
+    muuri() {
+        const gridMap = this.gridMap;
+        this.element['grid'] = document.getElementsByClassName('grid')[0] as HTMLElement;
+        while (this.element['grid'].firstChild) this.element['grid'].removeChild(this.element['grid'].firstChild);
+        Object.keys(gridMap).forEach(name => {
+            this.element['grid'].appendChild(
+                ((name: string): HTMLDivElement => {
+                    const isEnabled = this.gridMap[name].enabled;
+                    const itemDom = this.makeDiv('', 'item ' + (isEnabled ? '' : 'disabled'));
+                    const content = this.makeDiv('', 'item-content');
+                    const onclick = () => {
+                        itemDom.classList.toggle('disabled');
+                        this.gridMap[name].enabled = !itemDom.classList.contains('disabled');
+                        this.onChangeState();
+                    };
+                    const custom = this.makeCustom(name, onclick);
+                    content.appendChild(custom);
+                    itemDom.appendChild(content);
+                    return itemDom;
+                })(name),
+            );
+            this.iElement[name] = document.getElementById(name) as HTMLInputElement;
+            this.iElement[name].onchange = this.onChangeState;
+        });
+        this.grid = new Muuri('.grid', { dragEnabled: true });
     }
 
     onChangeState() {
+        console.log('onChangeState');
         this.filterList = [];
-        const items = (this.grid.getItems() as any[]).map(
-            item => item._child.innerText,
-        );
+        const items = (this.grid.getItems() as any[]).map(item => item._child.innerText);
         items.forEach(name => {
             if (this.gridMap[name].enabled)
                 this.filterList.push({

@@ -16,3 +16,9 @@ overrides:
   - files: "*.ts"
     options:
       tabWidth: 4
+      printWidth: 160
+
+  - files: "*.html"
+    options:
+      tabWidth: 4
+      printWidth: 160

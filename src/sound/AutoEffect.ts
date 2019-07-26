@@ -1,23 +1,21 @@
-import "babel-polyfill";
-import { Repository } from "../app";
-import SoundApi from "../model/SoundApi";
-import FFT from "../model/FFT";
-import SoundWoker from "./SoundWorker";
-import AudioNodeBuilder from "../model/AudioNodeBuilder";
-import { countTime } from "../utils/log";
-import Grid from "../components/Grid";
+import 'babel-polyfill';
+import { Repository } from '../app';
+import SoundApi from '../model/SoundApi';
+import FFT from '../model/FFT';
+import SoundWoker from './SoundWorker';
+import AudioNodeBuilder from '../model/AudioNodeBuilder';
+import { countTime } from '../utils/log';
+import Grid from '../components/Grid';
 
-const videoDom = document.getElementById("myVideo");
-const debugDom = document.getElementById("debugText");
-const rTimeDom = document.getElementById("recTime");
-const buttonDom = document.getElementById("recBtn") as HTMLButtonElement;
-const pitchShiftDom = document.getElementById("shift") as HTMLInputElement;
+const videoDom = document.getElementById('myVideo');
+const rTimeDom = document.getElementById('recTime');
+const buttonDom = document.getElementById('recBtn') as HTMLButtonElement;
 const context: AudioContext = new AudioContext();
 const audioNodeBuilder: AudioNodeBuilder = new AudioNodeBuilder(context);
 
 export default class AutoEffect {
     private data: { recordingData: number[]; playingData: number[] } = { recordingData: [], playingData: [] };
-    private soundWoker: SoundWoker = new SoundWoker((message: MessageEvent) => {
+    private soundWoker: SoundWoker = new SoundWoker((message: EffectWorkerMessage) => {
         this.data.playingData = this.data.playingData.concat(message.data);
     });
 
@@ -29,7 +27,7 @@ export default class AutoEffect {
         this.repository.model.analyserNode = context.createAnalyser();
         repository.model.recordingTime = 0;
         buttonDom.disabled = false;
-        buttonDom.addEventListener("click", () => {
+        buttonDom.addEventListener('click', () => {
             buttonDom.disabled = true;
             this.start();
             this.play();
@@ -47,7 +45,7 @@ export default class AutoEffect {
         // node
         const recordingProcessorNode = context.createScriptProcessor(1024, 1, 1);
         recordingProcessorNode.onaudioprocess = e => {
-            console.log("onaudioprocess" /*, data.recordingData.length*/);
+            //  console.log('onaudioprocess' /*, data.recordingData.length*/);
             this.repository.model.recordingTime += e.inputBuffer.length;
             const d = Array.prototype.slice.call(e.inputBuffer.getChannelData(0));
             if (d[0] != 0 && d[1] != 0) {
@@ -62,7 +60,7 @@ export default class AutoEffect {
     }
 
     private play() {
-        countTime("play", () => {
+        countTime('play', () => {
             const data = this.data;
             if (data.playingData.length >= 1024 * 16) {
                 const input = data.playingData;
@@ -77,7 +75,7 @@ export default class AutoEffect {
     }
 
     private effect() {
-        countTime("effect", () => {
+        countTime('effect', () => {
             const data = this.data;
             if (data.recordingData.length > 0) {
                 const temp = data.recordingData;

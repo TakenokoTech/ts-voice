@@ -17,6 +17,11 @@ const shaderRule = {
     loader: 'ts-shader-loader'
 }
 
+const cssRule = {
+    test: /\.css/,
+    use: ["style-loader", { loader: "css-loader", options: { url: false } }]
+}
+
 const development = {
     entry: entry,
     output: {
@@ -27,7 +32,7 @@ const development = {
         extensions: [".tsx", ".ts", ".js", ".json", ".glsl", ".vert"]
     },
     module: {
-        rules: [babelRule, shaderRule]
+        rules: [babelRule, shaderRule, cssRule]
     },
     plugins: [
         new CopyWebpackPlugin([{ from: ".", to: ".", ignore: ["!*.html"] }], { context: "static" }),
@@ -49,7 +54,7 @@ const production = {
         extensions: [".tsx", ".ts", ".js", ".json", ".glsl", ".vert"]
     },
     module: {
-        rules: [babelRule, shaderRule]
+        rules: [babelRule, shaderRule, cssRule]
     },
     plugins: [
         new CopyWebpackPlugin([{ from: ".", to: ".", ignore: ["!*.html"] }], { context: "static" }),

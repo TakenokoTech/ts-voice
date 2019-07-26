@@ -5,7 +5,7 @@ import FFT from "../model/FFT";
 import SoundWoker from "./SoundWorker";
 import AudioNodeBuilder from "../model/AudioNodeBuilder";
 import { countTime } from "../utils/log";
-import Grid from "../sound/Grid";
+import Grid from "../components/Grid";
 
 const videoDom = document.getElementById("myVideo");
 const debugDom = document.getElementById("debugText");

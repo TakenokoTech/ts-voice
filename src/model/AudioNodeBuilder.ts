@@ -9,7 +9,7 @@ export default class AudioNodeBuilder {
     async oscillator(analyserNode: AnalyserNode, scriptProcessorNode: ScriptProcessorNode): Promise<AudioNode> {
         const context = this.context;
         const oscillator = context.createOscillator();
-        oscillator.type = "sine";
+        oscillator.type = 'sine';
         oscillator.frequency.value = 440;
         oscillator
             .connect(await this.gainNode())

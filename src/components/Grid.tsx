@@ -1,10 +1,23 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+
 import 'web-animations-js';
 import 'hammerjs';
 import * as Muuri from 'muuri';
 import './Grid.css';
 import BaseComponent from './BaseComponent';
+import VoiceModel from '../model/VoiceModel';
 
-class Grid extends BaseComponent {
+interface GridProps {
+    model: VoiceModel;
+}
+
+interface GridState {
+    width: number;
+    height: number;
+}
+
+export default class Grid extends BaseComponent<GridProps, GridState> {
     grid: any | null;
     gridMap: {
         [key: string]: { enabled: boolean; value: () => number };
@@ -17,7 +30,6 @@ class Grid extends BaseComponent {
         highshelf: { enabled: false, value: () => Math.pow(2, +this.iElement['highshelf'].value) },
         pitchshift: { enabled: false, value: () => +this.iElement['pitchshift'].value },
     };
-    filterList: MapList = [];
 
     private makeCustom = (name: string, onclick: () => void) => {
         const nameSpan = this.makeDiv('', '', `${name}`);
@@ -28,11 +40,24 @@ class Grid extends BaseComponent {
         return custom;
     };
 
-    constructor() {
-        super();
+    constructor(props: GridProps) {
+        super(props);
         this.muuri = this.muuri.bind(this);
         this.onChangeState = this.onChangeState.bind(this);
+    }
+
+    componentDidMount() {
+        console.log('Grid.componentDidMount');
         this.muuri();
+    }
+
+    render() {
+        return (
+            <div className="">
+                <h4 className="text-muted">Filter</h4>
+                <div className="grid" />
+            </div>
+        );
     }
 
     muuri() {
@@ -64,20 +89,12 @@ class Grid extends BaseComponent {
 
     onChangeState() {
         console.log('onChangeState');
-        this.filterList = [];
+        const effectList: MapList = [];
         const items = (this.grid.getItems() as any[]).map(item => item._child.innerText);
         items.forEach(name => {
-            if (this.gridMap[name].enabled)
-                this.filterList.push({
-                    [name]: this.gridMap[name].value() || 0,
-                });
+            if (this.gridMap[name].enabled) effectList.push({ [name]: this.gridMap[name].value() || 0 });
         });
-        console.log(JSON.stringify(this.filterList));
-    }
-
-    getFilterList(): MapList {
-        return this.filterList;
+        console.log(JSON.stringify(effectList));
+        this.props.model.effectList = effectList;
     }
 }
-
-export default new Grid();

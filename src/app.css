@@ -1,0 +1,42 @@
+.wrapper {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(4, 240px);
+    grid-auto-flow: dense;
+}
+
+.header {
+    grid-column: span 12;
+}
+
+.mini-content {
+    grid-column: span 3;
+    grid-row: span 2;
+    padding: 16px;
+}
+
+.content {
+    grid-column: span 9;
+    grid-row: span 2;
+    margin: 16px;
+}
+
+.footer {
+    grid-column: span 12;
+}
+
+.row1 {
+    grid-row: span 1;
+}
+
+.row2 {
+    grid-row: span 2;
+}
+
+.row3 {
+    grid-row: span 3;
+}
+
+.row4 {
+    grid-row: span 4;
+}

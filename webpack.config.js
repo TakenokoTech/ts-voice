@@ -12,11 +12,6 @@ const babelRule = {
     loader: "babel-loader"
 }
 
-const shaderRule = {
-    test: /\.(glsl|vert)$/,
-    loader: 'ts-shader-loader'
-}
-
 const cssRule = {
     test: /\.css/,
     use: ["style-loader", { loader: "css-loader", options: { url: false } }]
@@ -29,10 +24,10 @@ const development = {
         filename: "[name].bundle.js"
     },
     resolve: {
-        extensions: [".tsx", ".ts", ".js", ".json", ".glsl", ".vert"]
+        extensions: [".tsx", ".ts", ".js", ".json"]
     },
     module: {
-        rules: [babelRule, shaderRule, cssRule]
+        rules: [babelRule, cssRule]
     },
     plugins: [
         new CopyWebpackPlugin([{ from: ".", to: ".", ignore: ["!*.html"] }], { context: "static" }),
@@ -51,10 +46,10 @@ const production = {
         filename: "[name].bundle.js"
     },
     resolve: {
-        extensions: [".tsx", ".ts", ".js", ".json", ".glsl", ".vert"]
+        extensions: [".tsx", ".ts", ".js", ".json"]
     },
     module: {
-        rules: [babelRule, shaderRule, cssRule]
+        rules: [babelRule, cssRule]
     },
     plugins: [
         new CopyWebpackPlugin([{ from: ".", to: ".", ignore: ["!*.html"] }], { context: "static" }),

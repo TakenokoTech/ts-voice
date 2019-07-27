@@ -1,7 +1,8 @@
-export default class BaseComponent {
+import React from 'react';
+
+export default class BaseComponent<P = {}, S = {}, SS = any> extends React.Component<P, S, SS> {
     element: { [key: string]: HTMLElement } = {};
     iElement: { [key: string]: HTMLInputElement } = {};
-    constructor() {}
 
     makeSpan = (id: string = '', className: string = '', innerHTML = '') => {
         const content = document.createElement('span');

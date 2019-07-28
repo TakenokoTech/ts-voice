@@ -6,5 +6,5 @@ export function countTime(name: string, func: () => void, b: boolean = false) {
 }
 
 export function diffTime(name: string, startTime: number, endTime: number = performance.now()) {
-    return `${('          ' + name).substr(-10)}: ${endTime - startTime}`;
+    return `${('               ' + name).substr(-16)}: ${endTime - startTime}`;
 }

@@ -40,7 +40,6 @@ export default class AutoEffect {
     onAudioProcess = (e: AudioProcessingEvent) => {
         if (this.model.mode != ModeType.Playing) return;
         countTime('onaudioprocess', () => {
-            //  console.log('onaudioprocess' /*, data.recordingData.length*/);
             this.model.recordingTime += e.inputBuffer.length;
             const d = Array.prototype.slice.call(e.inputBuffer.getChannelData(0));
             if (d[0] != 0 && d[1] != 0) {

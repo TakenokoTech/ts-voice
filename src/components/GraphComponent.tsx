@@ -1,5 +1,5 @@
 import React from 'react';
-import VoiceModel from '../model/VoiceModel';
+import VoiceModel, { ModeType } from '../model/VoiceModel';
 
 interface GraphProps {
     model: VoiceModel;
@@ -11,7 +11,7 @@ interface GraphState {
     divided: number;
 }
 
-export default class Graph extends React.Component<GraphProps, GraphState> {
+export default class GraphComponent extends React.Component<GraphProps, GraphState> {
     canvasContext: CanvasRenderingContext2D | null = null;
     color = [['rgba(230, 0, 18, 0.8)', 'rgba(0, 167, 219, 0.8)'], ['rgba(0, 173, 169, 0.8)', 'rgba(243, 151, 0, 0.8)']];
 
@@ -29,6 +29,14 @@ export default class Graph extends React.Component<GraphProps, GraphState> {
         this.setState({ width: graphLayout.offsetWidth, height: graphLayout.offsetHeight });
     }
 
+    componentWillUpdate(prevProps: GraphProps, prevState: GraphState) {
+        const rData = this.props.model.analyserRecordingData;
+        const pData = this.props.model.analyserPlayingData;
+        const graph = this.clear();
+        if (this.props.model.mode == ModeType.Playing)
+            graph.update(rData.frequencyFloatData, rData.timeDomainFloatData, 0).update(pData.frequencyFloatData, pData.timeDomainFloatData, 1);
+    }
+
     render() {
         return (
             <div id="playerBox" className="border" style={{ height: this.state.height }}>
@@ -37,7 +45,7 @@ export default class Graph extends React.Component<GraphProps, GraphState> {
         );
     }
 
-    clear(): Graph {
+    clear(): GraphComponent {
         const context = this.canvasContext as CanvasRenderingContext2D;
         const width = (this.refs.canvas as HTMLCanvasElement).width;
         const height = (this.refs.canvas as HTMLCanvasElement).height;
@@ -107,7 +115,7 @@ export default class Graph extends React.Component<GraphProps, GraphState> {
         return this;
     }
 
-    update(frequencyData: Uint8Array, timeDomainData: Uint8Array, frequencyFloatData: Float32Array, timeDomainFloatData: Float32Array, no = 0): Graph {
+    update(frequencyFloatData: Float32Array, timeDomainFloatData: Float32Array, no = 0): GraphComponent {
         const context = this.canvasContext as CanvasRenderingContext2D;
         const width = (this.refs.canvas as HTMLCanvasElement).width;
         const height = (this.refs.canvas as HTMLCanvasElement).height;

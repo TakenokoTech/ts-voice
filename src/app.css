@@ -1,7 +1,7 @@
 .wrapper {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: repeat(4, 240px);
+    grid-template-rows: repeat(6, 220px);
     grid-auto-flow: dense;
 }
 
@@ -17,6 +17,12 @@
 
 .content {
     grid-column: span 9;
+    grid-row: span 2;
+    margin: 16px;
+}
+
+.big-content {
+    grid-column: span 12;
     grid-row: span 2;
     margin: 16px;
 }

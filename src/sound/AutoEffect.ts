@@ -2,7 +2,7 @@ import 'babel-polyfill';
 import SoundWoker from './SoundWorker';
 import AudioNodeBuilder from '../model/AudioNodeBuilder';
 import { countTime } from '../utils/log';
-import VoiceModel from '../model/VoiceModel';
+import VoiceModel, { ModeType } from '../model/VoiceModel';
 
 const videoDom = document.getElementById('myVideo');
 const context: AudioContext = new AudioContext();
@@ -18,44 +18,49 @@ export default class AutoEffect {
         this.start = this.start.bind(this);
         this.effect = this.effect.bind(this);
         this.play = this.play.bind(this);
-        this.model.analyserPlayNode = context.createAnalyser();
-        this.model.analyserNode = context.createAnalyser();
-        this.model.recordingTime = 0;
+        this.reset = this.reset.bind(this);
+        this.reset();
     }
 
     async start() {
-        const data = this.data;
-        const analyserNode = this.model.analyserNode as AnalyserNode;
+        this.model.analyserPlayingNode = context.createAnalyser();
+        this.model.analyserRecordingNode = context.createAnalyser();
         // video
         const video: HTMLVideoElement = (videoDom as HTMLVideoElement) || new HTMLVideoElement();
         video.srcObject = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
         video.volume = 0;
         // node
+        const rNode = this.model.analyserRecordingNode as AnalyserNode;
         const recordingProcessorNode = context.createScriptProcessor(1024, 1, 1);
-        recordingProcessorNode.onaudioprocess = e => {
+        recordingProcessorNode.onaudioprocess = this.onAudioProcess;
+        // audioNodeBuilder.oscillator(rNode, recordingProcessorNode);
+        audioNodeBuilder.mediaStream(video.srcObject, rNode, recordingProcessorNode);
+    }
+
+    onAudioProcess = (e: AudioProcessingEvent) => {
+        if (this.model.mode != ModeType.Playing) return;
+        countTime('onaudioprocess', () => {
             //  console.log('onaudioprocess' /*, data.recordingData.length*/);
             this.model.recordingTime += e.inputBuffer.length;
             const d = Array.prototype.slice.call(e.inputBuffer.getChannelData(0));
             if (d[0] != 0 && d[1] != 0) {
-                Array.prototype.push.apply(data.recordingData, d);
+                Array.prototype.push.apply(this.data.recordingData, d);
                 Array.prototype.push.apply(this.model.rawdata, d);
             }
-        };
-        {
-            audioNodeBuilder.oscillator(analyserNode, recordingProcessorNode);
-            audioNodeBuilder.mediaStream(video.srcObject, analyserNode, recordingProcessorNode);
-        }
-    }
+        });
+    };
 
     play() {
+        if (this.model.mode != ModeType.Playing) return;
         countTime('play', () => {
             const data = this.data;
             if (data.playingData.length >= 1024 * 16) {
                 const input = data.playingData;
-                const analyserPlayNode = this.model.analyserPlayNode as AnalyserNode;
+                const pNode = this.model.analyserPlayingNode as AnalyserNode;
                 const audioBuffer = context.createBuffer(1, input.length, 44100);
                 audioBuffer.getChannelData(0).set(input);
-                audioNodeBuilder.audioBuffer(audioBuffer, analyserPlayNode);
+                audioNodeBuilder.gainValue = this.model.getEffect('gain');
+                audioNodeBuilder.audioBuffer(audioBuffer, pNode);
                 data.playingData = [];
             }
         });
@@ -63,6 +68,7 @@ export default class AutoEffect {
     }
 
     effect() {
+        if (this.model.mode != ModeType.Playing) return;
         countTime('effect', () => {
             const data = this.data;
             if (data.recordingData.length > 0) {
@@ -72,5 +78,11 @@ export default class AutoEffect {
             }
         });
         setTimeout(this.effect, 0);
+    }
+
+    reset() {
+        this.data = { recordingData: [], playingData: [] };
+        this.model.rawdata = [];
+        this.model.recordingTime = 0;
     }
 }

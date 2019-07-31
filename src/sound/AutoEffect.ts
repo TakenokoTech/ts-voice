@@ -5,10 +5,10 @@ import { countTime } from '../utils/log';
 import VoiceModel, { ModeType } from '../model/VoiceModel';
 
 const videoDom = document.getElementById('myVideo');
-const context: AudioContext = new AudioContext();
-const audioNodeBuilder: AudioNodeBuilder = new AudioNodeBuilder(context);
 
 export default class AutoEffect {
+    private context: AudioContext;
+    private audioNodeBuilder: AudioNodeBuilder;
     private data: { recordingData: number[]; playingData: number[] } = { recordingData: [], playingData: [] };
     private soundWoker: SoundWoker = new SoundWoker((message: EffectWorkerMessage) => {
         this.data.playingData = this.data.playingData.concat(message.data);
@@ -19,22 +19,25 @@ export default class AutoEffect {
         this.effect = this.effect.bind(this);
         this.play = this.play.bind(this);
         this.reset = this.reset.bind(this);
+        this.context = new AudioContext();
+        this.audioNodeBuilder = new AudioNodeBuilder(this.context);
         this.reset();
     }
 
     async start() {
-        this.model.analyserPlayingNode = context.createAnalyser();
-        this.model.analyserRecordingNode = context.createAnalyser();
+        this.model.analyserPlayingNode = this.context.createAnalyser();
+        this.model.analyserRecordingNode = this.context.createAnalyser();
         // video
         const video: HTMLVideoElement = (videoDom as HTMLVideoElement) || new HTMLVideoElement();
         video.srcObject = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
         video.volume = 0;
         // node
         const rNode = this.model.analyserRecordingNode as AnalyserNode;
-        const recordingProcessorNode = context.createScriptProcessor(1024, 1, 1);
+        const recordingProcessorNode = this.context.createScriptProcessor(1024, 1, 1);
         recordingProcessorNode.onaudioprocess = this.onAudioProcess;
-        // audioNodeBuilder.oscillator(rNode, recordingProcessorNode);
-        audioNodeBuilder.mediaStream(video.srcObject, rNode, recordingProcessorNode);
+
+        // this.audioNodeBuilder.oscillator(rNode, recordingProcessorNode);
+        this.audioNodeBuilder.mediaStream(video.srcObject, rNode, recordingProcessorNode);
     }
 
     onAudioProcess = (e: AudioProcessingEvent) => {
@@ -56,10 +59,10 @@ export default class AutoEffect {
             if (data.playingData.length >= 1024 * 16) {
                 const input = data.playingData;
                 const pNode = this.model.analyserPlayingNode as AnalyserNode;
-                const audioBuffer = context.createBuffer(1, input.length, 44100);
+                const audioBuffer = this.context.createBuffer(1, input.length, 44100);
                 audioBuffer.getChannelData(0).set(input);
-                audioNodeBuilder.gainValue = this.model.getEffect('gain');
-                audioNodeBuilder.audioBuffer(audioBuffer, pNode);
+                this.audioNodeBuilder.gainValue = this.model.getEffect('gain');
+                this.audioNodeBuilder.audioBuffer(audioBuffer, pNode);
                 data.playingData = [];
             }
         });

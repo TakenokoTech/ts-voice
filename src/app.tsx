@@ -9,6 +9,7 @@ import VoiceModel from './model/VoiceModel';
 import PlayerLayout from './components/PlayerComponent';
 import Grid from './components/GridComponent';
 import Track from './components/TrackComponent';
+import Pitch from './components/PitchComponent';
 
 interface AppContainerProps {}
 
@@ -43,6 +44,9 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
                     </div>
                     <div id="trackLayout" className="big-content row1 border m-3">
                         <Track ref="track" model={this.state.model} />
+                    </div>
+                    <div id="pitchLayout" className="big-content row1 border m-3">
+                        <Pitch ref="pitch" model={this.state.model} />
                     </div>
                 </div>
             </div>
